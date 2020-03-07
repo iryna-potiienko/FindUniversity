@@ -1,0 +1,41 @@
+﻿@model IEnumerable<FindUniversity.Universities>
+
+@{
+    ViewData["Title"] = "Університети у країні";
+}
+
+<h1>Університети у країні @ViewBag.CountryName</h1>
+
+<p>
+    @Html.ActionLink("Додати університет","Create",new {countryId= @ViewBag.CountryId })
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Country)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Country.Name)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id"  asp-route-countryId="@ViewBag.CountryId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id" asp-route-countryId="@ViewBag.CountryId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id" asp-route-countryId="@ViewBag.CountryId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

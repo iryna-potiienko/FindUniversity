@@ -1,0 +1,41 @@
+﻿@model IEnumerable<FindUniversity.FacultyEducationalProg>
+
+@{
+    ViewData["Title"] = "Освітні програми факультету";
+}
+
+<h1>Освітні програми факультету @ViewBag.FacultyName </h1>
+
+<p>
+    <a asp-action="Create" asp-route-facultyId="@ViewBag.FacultyId">Додати освітню програму до факультету</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.EducationalProg)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Faculty)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.EducationalProg.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Faculty.Name)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id" asp-route-facultyId="@ViewBag.FacultyId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id" asp-route-facultyId="@ViewBag.FacultyId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id" asp-route-facultyId="@ViewBag.FacultyId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

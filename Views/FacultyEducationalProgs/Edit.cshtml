@@ -1,0 +1,43 @@
+﻿@model FindUniversity.FacultyEducationalProg
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>FacultyEducationalProg</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div class="form-group">
+                <label asp-for="FacultyId" class="control-label"></label>
+                <select asp-for="FacultyId" class="form-control" asp-items="ViewBag.FacultyId"></select>
+                <span asp-validation-for="FacultyId" class="text-danger"></span>
+            </div>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="EducationalProgId" class="control-label"></label>
+                <select asp-for="EducationalProgId" class="form-control" asp-items="ViewBag.EducationalProgId"></select>
+                <span asp-validation-for="EducationalProgId" class="text-danger"></span>
+            </div>
+
+
+            <input type="hidden" value="@ViewBag.FacultyId" name="FacultyId" />
+
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index" asp-route-id="@ViewBag.FacultyId">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
