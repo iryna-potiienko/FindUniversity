@@ -7,7 +7,7 @@
     <h1>Освітні програми спеціальності @ViewBag.SpecialtiesName</h1>
 
 <p>
-    @Html.ActionLink("Додати нову освітню програму", "Create", new { specialtiesId=@ViewBag.SpecialtiesId})
+    <button type="button" class="btn btn-primary">@Html.ActionLink("Додати нову освітню програму", "Create", new { specialtiesId=@ViewBag.SpecialtiesId})</button>
 </p>
 
 <table class="table">
@@ -39,9 +39,9 @@
                     @Html.DisplayFor(modelItem => item.Specialties.Name)
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id" asp-route-specialtiesId="@ViewBag.SpecialtiesId">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id" asp-route-specialtiesId="@ViewBag.SpecialtiesId">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id" asp-route-specialtiesId="@ViewBag.SpecialtiesId">Delete</a>
+                    <a asp-action="Edit" asp-route-id="@item.Id" asp-route-specialtiesId="@ViewBag.SpecialtiesId">Редагувати</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id" asp-route-specialtiesId="@ViewBag.SpecialtiesId">Факультети</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id" asp-route-specialtiesId="@ViewBag.SpecialtiesId">Видалити</a>
                 </td>
             </tr>
         }

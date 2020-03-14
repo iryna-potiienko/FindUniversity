@@ -31,9 +31,9 @@
                 @Html.DisplayFor(modelItem => item.Faculty.Name)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id" asp-route-facultyId="@ViewBag.FacultyId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id" asp-route-facultyId="@ViewBag.FacultyId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id" asp-route-facultyId="@ViewBag.FacultyId">Delete</a>
+                <a asp-action="Edit" asp-route-id="@item.Id" asp-route-facultyId="@ViewBag.FacultyId">Редагувати</a> |
+                <a asp-action="Details" asp-route-id="@item.Id" asp-route-facultyId="@ViewBag.FacultyId">Детальніше про освітню програму</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id" asp-route-facultyId="@ViewBag.FacultyId">Видалити</a>
             </td>
         </tr>
 }

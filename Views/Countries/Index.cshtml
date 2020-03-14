@@ -7,7 +7,7 @@
 <h1>Університети у країнах</h1>
 
 <p>
-    <a asp-action="Create">Додати країну</a>
+    <a button type="button" class="btn btn-primary" asp-action="Create">Додати країну</a>
 </p>
 <table class="table">
     <thead>
@@ -25,11 +25,37 @@
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-action="Edit" asp-route-id="@item.Id">Редагувати</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Університети</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
             </td>
         </tr>
 }
     </tbody>
 </table>
+
+<div class="container">
+    <div id="chart1"></div>
+</div>
+
+@section scripts{ 
+    <script type="text/javascript" scr="https://www.gstatic.com/charts/loader.js"></script>
+
+    <script type="text/javascript">
+        google.charts.load('current', { 'packages': ['corechart'] });
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            $.get('/api/Charts/JsonData', function (jsonData){
+                data = google.visualization.arrayToDataTable(jsonData, false);
+                var option = {
+                    title: "Співвідношення університетів у країнах",
+                    width: 500,
+                    height: 400
+                };
+                chart = new google.visualization.PieChart(document.getElementById('chart1'));
+                chart.draw(data, option);
+            })
+        }
+    </script>
+}
