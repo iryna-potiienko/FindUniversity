@@ -14,6 +14,8 @@ namespace FindUniversity
         public int Id { get; set; }
         [Required (ErrorMessage="Обов'язкове поле!")]
         [Display(Name = "Назва спеціальності")]
+
+        //public int Number { get; set; }
         public string Name { get; set; }
         [Display(Name = "Інформація про спеціальність")]
         public string Info { get; set; }

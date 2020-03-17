@@ -40,3 +40,30 @@
         }
     </tbody>
 </table>
+
+<div class="container">
+    <div id="chart3" style="width:100%; height:auto"></div>
+</div>
+
+@section scripts{
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+        google.load("visualization", "1", { 'packages': ['corechart'] });
+        google.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            $.get('/api/ChartSpecialty/JsonData', function (jsonData) {
+                data = google.visualization.arrayToDataTable(jsonData, false);
+                var option = {
+                    title: "Співвідношення освітніх програм на спеціальностях",
+                    width: 500,
+                    height: 400
+                };
+
+                var chart = new google.visualization.PieChart(document.getElementById('chart3'));
+                chart.draw(data, option);
+            })
+        }
+    </script>
+
+}
