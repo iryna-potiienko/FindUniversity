@@ -7,7 +7,7 @@
     <h1>Освітні програми спеціальності @ViewBag.SpecialtiesName</h1>
 
 <p>
-    <button type="button" class="btn btn-primary">@Html.ActionLink("Додати нову освітню програму", "Create", new { specialtiesId=@ViewBag.SpecialtiesId})</button>
+    @Html.ActionLink("Додати нову освітню програму", "Create", new { specialtiesId=@ViewBag.SpecialtiesId})
 </p>
 
 <table class="table">
