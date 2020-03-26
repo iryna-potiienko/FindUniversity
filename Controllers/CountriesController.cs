@@ -240,7 +240,7 @@ namespace FindUniversity.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public ActionResult Export()
+   /*     public ActionResult Export()
         {
             using (XLWorkbook workbook = new XLWorkbook(XLEventTracking.Disabled))
             {
@@ -276,7 +276,7 @@ namespace FindUniversity.Controllers
                                 worksheet.Cell(i + 2, j + 2).Value = a.Author.Name;
                                 j++;
                             }
-                        }*/
+                        }
 
                     }
                 }
@@ -292,7 +292,7 @@ namespace FindUniversity.Controllers
                     };
                 }
             }
-        }
+        }*/
 
 
     }
