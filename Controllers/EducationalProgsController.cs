@@ -46,9 +46,9 @@ namespace FindUniversity.Controllers
                 return NotFound();
             }
 
-            //return View(educationalProg);
-            return RedirectToAction("Index", "FacultyEducationalProgs", new { id = educationalProg.Id, name = educationalProg.Name });
-            //return RedirectToAction("Index","")
+            return View(educationalProg);
+           // return RedirectToAction("Index", "FacultyEducationalProgs", new { id = educationalProg.Id, name = educationalProg.Name });
+            
         }
 
         // GET: EducationalProgs/Create
