@@ -191,6 +191,7 @@ namespace FindUniversity.Controllers
                                 {
                                     // try
                                     //  {
+                                    Countries country = new Countries();
                                     Universities university = new Universities();
                                      Faculties faculties;
 
@@ -199,43 +200,71 @@ namespace FindUniversity.Controllers
                                         //educationalProg.Info = row.Cell(6).Value.ToString();
                                         educationalProg.Specialties = newcat;
                                         _context.EducationalProg.Add(educationalProg);
-                                        //у разі наявності автора знайти його, у разі відсутності - додати
-                                        for (int i = 2; i <= 10; i=i+2)
+                                        //у разі наявності факультету знайти його, у разі відсутності - додати
+                                        for (int i = 2; i <= 10; i=i+3)
                                         {
                                             if (row.Cell(i).Value.ToString().Length > 0)
                                             {
-                                               // Faculties faculties;
+                                            // у разі наявності університету знайти його, у разі відсутності - додати
 
-                                                var a = (from fac in _context.Faculties
+                                            var a = (from fac in _context.Faculties
                                                          where fac.Name.Contains(row.Cell(i).Value.ToString())
                                                          select fac).ToList();
                                                 if (a.Count > 0)
-                                                     {
+                                                {
                                                         faculties = a[0];
-                                                     }
+                                                }
                                                 else
                                                 {
-                                                    for (int j = 3; j <= 10; j = j + 2)
+                                                    for (int j = 3; j <= 10; j = j + 3)
                                                     {
                                                         if (row.Cell(j).Value.ToString().Length > 0)
-                                                        {   
-                                                        //Universities universities;
-
+                                                        { 
                                                             var u = (from univ in _context.Universities
                                                                  where univ.Name.Contains(row.Cell(j).Value.ToString())
                                                                  select univ).ToList();
                                                             if (u.Count > 0)
                                                             {
-                                                                university = u[0];
+                                                            university = u[0];
                                                             }
                                                             else
                                                             {
-                                                            //universities = new Universities();
-                                                                university.Name = row.Cell(j).Value.ToString();
-                                                                //university.Faculties.Add(faculties);
+                                                            //цикл по країнах
+                                                            for (int z = 4; z <= 10; z = z + 3)
+                                                            {
+                                                                if (row.Cell(z).Value.ToString().Length > 0)
+                                                                {
+
+
+                                                                    var co = (from coun in _context.Countries
+                                                                              where coun.Name.Contains(row.Cell(z).Value.ToString())
+                                                                              select coun).ToList();
+                                                                    if (co.Count > 0)
+                                                                    {
+                                                                        country = co[0];
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        country = new Countries();
+                                                                        country.Name = row.Cell(z).Value.ToString();
+                                                                        //country.Info = "from EXCEL";
+                                                                        //додати в контекст
+                                                                        _context.Countries.Add(country);
+                                                                    }
+                                                                }
+                                                            }
+
+
+
+
+                                                            university = new Universities();
+                                                            university.Name = row.Cell(j).Value.ToString();
+                                                        //university.Faculties.Add(faculties);
+                                                            university.Country = country;
                                                         //universities.Info = "from EXCEL";
                                                         //додати в контекст
-                                                                _context.Universities.Add(university);
+                                                            _context.Universities.Add(university);
+
                                                             }
                                                         }
                                                        // faculties.Name = row.Cell(i).Value.ToString();
@@ -245,6 +274,7 @@ namespace FindUniversity.Controllers
                                                     }
                                                // }
                                                 faculties = new Faculties();
+                                                //university = new Universities();
                                                 faculties.Name = row.Cell(i).Value.ToString();
                                                 //faculties.Info = "from EXCEL";
                                                 //university.Faculties.Add(faculties);
