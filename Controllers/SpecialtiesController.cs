@@ -22,8 +22,9 @@ namespace FindUniversity.Controllers
         }
 
         // GET: Specialties
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string error)
         {
+            ViewBag.ErrorMes = error;
             //var findUnivContext = _context.Specialties.Include(e => e.EducationalProg);
             return View(await _context.Specialties.ToListAsync());
         }
@@ -157,6 +158,7 @@ namespace FindUniversity.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Import(IFormFile fileExcel)
         {
+            string ErrorMes, err;
             if (ModelState.IsValid)
             {
                 if (fileExcel != null)
@@ -171,8 +173,10 @@ namespace FindUniversity.Controllers
                             {
                                 //worksheet.Name - назва категорії. Пробуємо знайти в БД, якщо відсутня, то створюємо нову
                                 Specialties newcat;
+                                if (worksheet.Name.Count() > 31) worksheet.Name = worksheet.Name.Substring(0, 30);
+
                                 var c = (from cat in _context.Specialties
-                                         where cat.Name.Contains(worksheet.Name)
+                                         where cat.Name == worksheet.Name +" "+ worksheet.Cell(2, 8).Value.ToString()
                                          select cat).ToList();
                                 if (c.Count > 0)
                                 {
@@ -181,7 +185,7 @@ namespace FindUniversity.Controllers
                                 else
                                 {
                                     newcat = new Specialties();
-                                    newcat.Name = worksheet.Name;
+                                    newcat.Name = worksheet.Name.Substring(0,3) + " " + worksheet.Cell(2,8).Value.ToString();
                                     newcat.Info = "from EXCEL";
                                     //додати в контекст
                                     _context.Specialties.Add(newcat);
@@ -189,90 +193,121 @@ namespace FindUniversity.Controllers
                                 //перегляд усіх рядків                    
                                 foreach (IXLRow row in worksheet.RowsUsed().Skip(1))
                                 {
-                                    // try
-                                    //  {
+                                   // try
+                                  //  {
                                     Countries country = new Countries();
                                     Universities university = new Universities();
-                                     Faculties faculties;
+                                    Faculties faculties=new Faculties();
+                                    EducationalProg educationalProg = new EducationalProg();
 
-                                        EducationalProg educationalProg = new EducationalProg();
-                                        educationalProg.Name = row.Cell(1).Value.ToString();
-                                        //educationalProg.Info = row.Cell(6).Value.ToString();
-                                        educationalProg.Specialties = newcat;
-                                        _context.EducationalProg.Add(educationalProg);
-                                        //у разі наявності факультету знайти його, у разі відсутності - додати
-                                        for (int i = 2; i <= 10; i=i+3)
+                                        //newcat.Name = worksheet.Name.Substring(0, 3) + " " + row.Cell(8).Value.ToString();
+
+                                        //EducationalProg educationalProg;
+                                        var edu = (from ed in _context.EducationalProg
+                                                 where ed.Name == row.Cell(1).Value.ToString()
+                                                 select ed).ToList();
+                                        if (edu.Count > 0)
                                         {
-                                            if (row.Cell(i).Value.ToString().Length > 0)
+                                            educationalProg = edu[0];
+                                            //educationalProg.Specialties = newcat;
+                                        }
+                                        else
+                                        {
+                                            educationalProg = new EducationalProg();
+                                            educationalProg.Name = row.Cell(1).Value.ToString();
+                                            //educationalProg.Info = row.Cell(6).Value.ToString();
+                                            educationalProg.Specialties = newcat;
+                                            _context.EducationalProg.Add(educationalProg);
+                                        }
+                                    //у разі наявності факультету знайти його, у разі відсутності - додати
+                                    for (int i = 2; i <= 5; i = i + 3)
+                                    {
+                                        if (row.Cell(i).Value.ToString().Length > 0)
+                                        {
+                                            try
                                             {
-                                            // у разі наявності університету знайти його, у разі відсутності - додати
-
-                                            var a = (from fac in _context.Faculties
-                                                         where fac.Name.Contains(row.Cell(i).Value.ToString())
-                                                         select fac).ToList();
-                                                if (a.Count > 0)
+                                                if (row.Cell(i + 2).Value.ToString().Length > 0)
                                                 {
-                                                        faculties = a[0];
+
+
+                                                    var co = (from coun in _context.Countries
+                                                              where coun.Name.Contains(row.Cell(i + 2).Value.ToString())
+                                                              select coun).ToList();
+                                                    if (co.Count > 0)
+                                                    {
+                                                        country = co[0];
+                                                    }
+                                                    else
+                                                    {
+                                                        // if (row.Cell(z).Value.ToString().Length == 0) throw new Exception(" Країну не вірно вказано у спеціальності " + worksheet.Name + "у рядку " + row.RowNumber());
+                                                        country = new Countries();
+                                                        country.Name = row.Cell(i + 2).Value.ToString();
+                                                        //country.Info = "from EXCEL";
+                                                        //додати в контекст
+                                                        _context.Countries.Add(country);
+                                                    }
                                                 }
                                                 else
                                                 {
-                                                    for (int j = 3; j <= 10; j = j + 3)
+                                                    throw new Exception(" Країну не вірно вказано у спеціальності " + worksheet.Name + "у рядку " + row.RowNumber());
+                                                }
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                //throw new Exception(e.Message);
+                                                //err = " Країну не вірно вказано у спеціальності " + worksheet.Name + "у рядку " + row.RowNumber();
+                                                ViewBag.ErrorMes = e.Message;
+                                                return RedirectToAction("Index", "Specialties", new { error = e.Message });
+                                            }
+                                            try
+                                            {
+                                                if (row.Cell(i + 1).Value.ToString().Length > 0)
+                                                {
+
+
+                                                    var u = (from univ in _context.Universities
+                                                             where univ.Country.Name.Contains(country.Name) && univ.Name==row.Cell(i+1).Value.ToString()
+                                                             select univ).ToList();
+                                                    if (u.Count > 0)
                                                     {
-                                                        if (row.Cell(j).Value.ToString().Length > 0)
-                                                        { 
-                                                            var u = (from univ in _context.Universities
-                                                                 where univ.Name.Contains(row.Cell(j).Value.ToString())
-                                                                 select univ).ToList();
-                                                            if (u.Count > 0)
-                                                            {
-                                                            university = u[0];
-                                                            }
-                                                            else
-                                                            {
-                                                            //цикл по країнах
-                                                            for (int z = 4; z <= 10; z = z + 3)
-                                                            {
-                                                                if (row.Cell(z).Value.ToString().Length > 0)
-                                                                {
-
-
-                                                                    var co = (from coun in _context.Countries
-                                                                              where coun.Name.Contains(row.Cell(z).Value.ToString())
-                                                                              select coun).ToList();
-                                                                    if (co.Count > 0)
-                                                                    {
-                                                                        country = co[0];
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        country = new Countries();
-                                                                        country.Name = row.Cell(z).Value.ToString();
-                                                                        //country.Info = "from EXCEL";
-                                                                        //додати в контекст
-                                                                        _context.Countries.Add(country);
-                                                                    }
-                                                                }
-                                                            }
-
-
-
-
-                                                            university = new Universities();
-                                                            university.Name = row.Cell(j).Value.ToString();
+                                                        university = u[0];
+                                                    }
+                                                    else
+                                                    {
+                                                        university = new Universities();
+                                                        university.Name = row.Cell(i + 1).Value.ToString();
                                                         //university.Faculties.Add(faculties);
-                                                            university.Country = country;
+                                                        // if(country==null) throw new Exception(" Країну не вірно вказано у спеціальності " + worksheet.Name + "у рядку " + row.RowNumber());
+                                                        university.Country = country;
                                                         //universities.Info = "from EXCEL";
                                                         //додати в контекст
-                                                            _context.Universities.Add(university);
+                                                        _context.Universities.Add(university);
 
-                                                            }
-                                                        }
-                                                       // faculties.Name = row.Cell(i).Value.ToString();
-                                                       /// faculties.University = university;
-                                                        //додати в контекст
-                                                      //  _context.Add(faculties);
                                                     }
-                                               // }
+                                                }
+                                                else
+                                                {
+                                                    throw new Exception("Університет не вказано у спеціальності " + worksheet.Name + " у рядку " + row.RowNumber().ToString());
+                                                }
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                //err = " Університет не вірно вказано у спеціальності " + worksheet.Name + "у рядку " + row.RowNumber();
+                                                ViewBag.ErrorMes = e.Message;
+                                                return RedirectToAction("Index", "Specialties", new { error = e.Message });
+                                                //throw new Exception(e.Message);
+                                                //throw new Exception("Університет не вказано у спеціальності " + worksheet.Name + " у рядку " + row.RowNumber().ToString());
+                                            }
+                                            //}
+                                            var a = (from fac in _context.Faculties
+                                                     where fac.University.Name == university.Name && fac.University.Country.Name.Contains(country.Name) && fac.Name == row.Cell(i).Value.ToString()
+                                                     select fac).ToList();
+                                            if (a.Count > 0)
+                                            {
+                                                faculties = a[0];
+                                            }
+                                            else
+                                            {
                                                 faculties = new Faculties();
                                                 //university = new Universities();
                                                 faculties.Name = row.Cell(i).Value.ToString();
@@ -281,19 +316,38 @@ namespace FindUniversity.Controllers
                                                 faculties.University = university;
                                                 //додати в контекст
                                                 _context.Faculties.Add(faculties);
-                                                }
-                                                FacultyEducationalProg fe = new FacultyEducationalProg();
-                                                fe.EducationalProg = educationalProg;
-                                                fe.Faculty = faculties;
-                                                _context.FacultyEducationalProg.Add(fe);
                                             }
-                                        }
+                                        //}
                                    // }
-                                   // catch (Exception e)
-                                    //{
-                                        //logging самостійно :)
+                                                FacultyEducationalProg fe;
+                                              /*  var facEd = (from fae in _context.FacultyEducationalProg
+                                                             where fae.EducationalProg.Name == educationalProg.Name && fae.Faculty.Name == faculties.Name && fae.Faculty.University.Name == university.Name
+                                                             select fae).ToList();
+                                                if (facEd.Count > 0)
+                                                {
+                                                    fe = facEd[0];
+                                                    //fe.EducationalProg = educationalProg;
+                                                    // fe.Faculty = faculties;
+                                                    //continue;
+                                                }
+                                                else
+                                                {*/
+                                                    fe = new FacultyEducationalProg();
+                                                    fe.EducationalProg = educationalProg;
+                                                    fe.Faculty = faculties;
+                                                    _context.FacultyEducationalProg.Add(fe);
+                                               // }
+                                            //}
+                                        }
+                                    }
 
-                                  //  }
+
+
+
+
+
+
+                                        
                                 }
                             }
                         }
@@ -313,48 +367,73 @@ namespace FindUniversity.Controllers
                 //тут, для прикладу ми пишемо усі книжки з БД, в своїх проектах ТАК НЕ РОБИТИ (писати лише вибрані)
                 foreach (var c in specialties)
                 {
-                    var worksheet = workbook.Worksheets.Add(c.Name.Substring(0,3));
-
-                    worksheet.Cell("A1").Value = "Назва освітньої програми";
-                    worksheet.Cell("B1").Value = "Факультет 1";
-                    worksheet.Cell("C1").Value = "Університет 1";
-                    worksheet.Cell("D1").Value = "Факультет 2";
-                    worksheet.Cell("E1").Value = "Університет 2";
-                    worksheet.Cell("F1").Value = "Спеціальність";
-                    worksheet.Cell("G1").Value = "Інформація про спеціальність";
-                    worksheet.Row(1).Style.Font.Bold = true;
-                    var educationalProgs = c.EducationalProg.ToList();
-
-                    //нумерація рядків/стовпчиків починається з індекса 1 (не 0)
-                    for (int i = 0; i < educationalProgs.Count; i++)
+                    IXLWorksheet worksheet;
+                    try
                     {
-                        worksheet.Cell(i + 2, 1).Value = educationalProgs[i].Name;
-                        worksheet.Cell(i + 2, 6).Value = educationalProgs[i].Specialties.Name;
-                       // worksheet.Cell(i+2,4).Value=educationalProgs[i].FacultyEducationalProg.Faculty
-                        worksheet.Cell(i + 2, 7).Value = educationalProgs[i].Specialties.Info;
-
-                        var fe = _context.FacultyEducationalProg.Where(a => a.EducationalProgId == educationalProgs[i].Id).Include("Faculty").ToList();
-                        //більше 4-ох нікуди писати
-                        int j = 0;
-                        foreach (var f in fe)
-                        {
-                            if (j < 6)
-                            {
-                                worksheet.Cell(i + 2, j + 2).Value = f.Faculty.Name;
-                                //worksheet.Cell(i + 2, 4).Value = f.Faculty.University.Name;
-                                //       j++;
-                                //    }
-                                var faculties = _context.Faculties.Where(c => c.Id == f.FacultyId).Include("University").ToList();
-                                foreach (var fac in faculties)
-                                {
-                                    worksheet.Cell(i + 2, j+3).Value = fac.University.Name;
-                                }
-                                j=j+2;
-                            }
-                        }
-
-                        //var univ = _context.FacultyEducationalProg.Where(a => a.FacultyId == educationalProgs[i].Id).Include("Faculty").ToList();
+                        worksheet = workbook.Worksheets.Add(c.Name.Substring(0, 3));
                     }
+                    catch (ArgumentException are)
+                    {
+                        int length;
+                        if (c.Name.Length > 32)
+                            length = 31;
+                        else
+                            length = c.Name.Length;
+                        worksheet = workbook.Worksheets.Add(c.Name.Substring(0, length));
+                        //continue;
+                    }
+
+                        worksheet.Cell("A1").Value = "Назва освітньої програми";
+                        worksheet.Cell("B1").Value = "Факультет 1";
+                        worksheet.Cell("C1").Value = "Університет 1";
+                        worksheet.Cell("D1").Value = "Країна 1";
+                        worksheet.Cell("E1").Value = "Факультет 2";
+                        worksheet.Cell("F1").Value = "Університет 2";
+                        worksheet.Cell("G1").Value = "Країна 2";
+                        worksheet.Cell("H1").Value = "Спеціальність(лише назва без індексу)";
+                        worksheet.Cell("I1").Value = "Інформація про спеціальність";
+                        worksheet.Row(1).Style.Font.Bold = true;
+                        var educationalProgs = c.EducationalProg.ToList();
+
+                        //нумерація рядків/стовпчиків починається з індекса 1 (не 0)
+                        for (int i = 0; i < educationalProgs.Count; i++)
+                        {
+                            worksheet.Cell(i + 2, 1).Value = educationalProgs[i].Name;
+                            worksheet.Cell(i + 2, 8).Value = educationalProgs[i].Specialties.Name.Substring(4);
+                            // worksheet.Cell(i+2,4).Value=educationalProgs[i].FacultyEducationalProg.Faculty
+                            worksheet.Cell(i + 2, 9).Value = educationalProgs[i].Specialties.Info;
+
+                            var fe = _context.FacultyEducationalProg.Where(a => a.EducationalProgId == educationalProgs[i].Id).Include("Faculty").ToList();
+                            //більше 4-ох нікуди писати
+                            int j = 0;
+                            foreach (var f in fe)
+                            {
+                                if (j < 10)
+                                {
+                                    worksheet.Cell(i + 2, j + 2).Value = f.Faculty.Name;
+                                    //worksheet.Cell(i + 2, 4).Value = f.Faculty.University.Name;
+                                    //       j++;
+                                    //    }
+                                    //int z = 0;
+                                    var faculties = _context.Faculties.Where(c => c.Id == f.FacultyId).Include("University").ToList();
+                                    foreach (var fac in faculties)
+                                    {
+                                        worksheet.Cell(i + 2, j + 3).Value = fac.University.Name;
+
+                                        var universities = _context.Universities.Where(d => d.Id == fac.UniversityId).Include("Country").ToList();
+                                        foreach (var univ in universities)
+                                        {
+                                            worksheet.Cell(i + 2, j + 4).Value = univ.Country.Name;
+                                        }
+                                        //j = j + 3;
+                                    }
+                                    j = j + 3;
+                                }
+                            }
+
+                            //var univ = _context.FacultyEducationalProg.Where(a => a.FacultyId == educationalProgs[i].Id).Include("Faculty").ToList();
+                        }
+                    
                 }
                 using (var stream = new MemoryStream())
                 {

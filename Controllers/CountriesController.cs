@@ -152,7 +152,7 @@ namespace FindUniversity.Controllers
             return _context.Countries.Any(e => e.Id == id);
         }
 
-        [HttpPost]
+  /*      [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Import(IFormFile fileExcel)
         {
@@ -220,7 +220,7 @@ namespace FindUniversity.Controllers
                                               /*  AuthorsBooks ab = new AuthorsBooks();
                                                 ab.Book = book;
                                                 ab.Author = author;
-                                                _context.AuthorsBooks.Add(ab);*/
+                                                _context.AuthorsBooks.Add(ab);
                                             }
                                         }
                                     }
@@ -240,7 +240,7 @@ namespace FindUniversity.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-   /*     public ActionResult Export()
+        public ActionResult Export()
         {
             using (XLWorkbook workbook = new XLWorkbook(XLEventTracking.Disabled))
             {

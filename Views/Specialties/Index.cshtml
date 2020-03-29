@@ -14,20 +14,33 @@
     <h3>Оберіть exel-файл для заватаження</h3>
     @using (Html.BeginForm("Import", "Specialties", FormMethod.Post, new { enctype = "multipart/form-data", id = "frm-excel" }))
     {
-        <div>
-            Завантажте Excel-файл:
-            <input type="file" name="fileExcel" id="fileExcel" />
-            <div>
-                <input type="submit" value="Завантажити" />
-            </div>
+       
+<div>
+    Завантажте Excel-файл:
+    <input type="file" name="fileExcel" id="fileExcel" />
+    <div>
+        <input type="submit" value="Завантажити" />
+    </div>
+    @if (ViewBag.ErrorMes != null)
+    {
+        <div class="alert alert-dismissible alert-danger">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <strong>@ViewBag.ErrorMes</strong> Виправте файл та спробуйте знову
         </div>
     }
 </div>
+
+    }
+    
+</div>
+
 
 <div>
     <h3>Завантаження інформації в файл</h3>
     <a asp-action="Export">Завантажити</a>
 </div>
+
+
 
 <table class="table">
     <thead>
