@@ -9,9 +9,11 @@ using ClosedXML.Attributes;
 using ClosedXML.Utils;
 using System.IO;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FindUniversity.Controllers
 {
+   // [Authorize(Roles ="admin,user")]
     public class CountriesController : Controller
     {
         private readonly FindUnivContext _context;
@@ -118,6 +120,7 @@ namespace FindUniversity.Controllers
             return View(countries);
         }
 
+        [Authorize(Roles ="admin")]
         // GET: Countries/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {

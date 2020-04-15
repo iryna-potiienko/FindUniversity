@@ -8,8 +8,9 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using FindUniversity.Models;
 
 namespace FindUniversity
 {
@@ -28,7 +29,15 @@ namespace FindUniversity
             string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<FindUnivContext>(options => options.UseSqlServer(connection));
             services.AddControllersWithViews();
+
+            string connectionIdentity = Configuration.GetConnectionString("IdentityConnection");            
+            services.AddDbContext<IdentityContext>(options => options.UseSqlServer(connectionIdentity));    
+            services.AddControllersWithViews();                                                            
+
+            services.AddIdentity<User, IdentityRole>()                                                                                                  
+                .AddEntityFrameworkStores<IdentityContext>();
         }
+
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -48,13 +57,14 @@ namespace FindUniversity
 
             app.UseRouting();
 
+            app.UseAuthentication(); // підключення аутентифікації
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Countries}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }
