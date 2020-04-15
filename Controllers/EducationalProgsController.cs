@@ -138,8 +138,9 @@ namespace FindUniversity.Controllers
         }
 
         // GET: EducationalProgs/Delete/5
-        public async Task<IActionResult> Delete(int? specialtiesId, int? id)
+        public async Task<IActionResult> Delete(int? specialtiesId, int? id, string? error)
         {
+            ViewBag.ErrorMes = error;
             if (id == null)
             {
                 return NotFound();
@@ -163,11 +164,37 @@ namespace FindUniversity.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int specialtiesId, int id)
         {
-            ViewBag.SpecialtiesId = specialtiesId;
-            var educationalProg = await _context.EducationalProg.FindAsync(id);
-            _context.EducationalProg.Remove(educationalProg);
-            await _context.SaveChangesAsync();
-            return RedirectToAction("Index", "EducationalProgs", new { id = specialtiesId });
+            
+            try
+            {
+                string error=null;
+                ViewBag.SpecialtiesId = specialtiesId;
+                var educationalProg = await _context.EducationalProg.FindAsync(id);
+                var facEdPr = _context.FacultyEducationalProg.Where(b => b.EducationalProgId == id);
+                if (facEdPr.Count() != 0)
+                {
+                    
+                    // if (specialties.EducationalProg.Count() != 0) 
+                    foreach(var fac in facEdPr)
+                    {
+                        var faculties = _context.Faculties.Where(f => f.Id == fac.FacultyId);
+                        foreach (var fa in faculties)
+                        {
+                            error += fa.Name+"; ";
+                        }
+                       
+                    }
+                    throw new Exception("Освітня програма викладається на таких факультетах: \n"+error);
+                }
+                _context.EducationalProg.Remove(educationalProg);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Index", "EducationalProgs", new { id = specialtiesId });
+            }
+            catch(Exception e)
+            {
+                ViewBag.ErrorMes = e.Message;
+                return RedirectToAction("Delete", "EducationalProgs", new { error = e.Message });
+            }
         }
 
         private bool EducationalProgExists(int id)

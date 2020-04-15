@@ -120,10 +120,11 @@ namespace FindUniversity.Controllers
             return View(countries);
         }
 
-        [Authorize(Roles ="admin")]
+       // [Authorize(Roles ="admin")]
         // GET: Countries/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int? id, string? error)
         {
+            ViewBag.ErrorMes = error;
             if (id == null)
             {
                 return NotFound();
@@ -144,10 +145,20 @@ namespace FindUniversity.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var countries = await _context.Countries.FindAsync(id);
-            _context.Countries.Remove(countries);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                var countries = await _context.Countries.FindAsync(id);
+                if (_context.Universities.Where(b => b.CountryId == id).Count() != 0)
+                    throw new Exception("Ця країна містить університети!");
+                _context.Countries.Remove(countries);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception e)
+            {
+                ViewBag.ErrorMes = e.Message;
+                return RedirectToAction("Delete", "Countries", new { error = e.Message });
+            }
         }
 
         private bool CountriesExists(int id)

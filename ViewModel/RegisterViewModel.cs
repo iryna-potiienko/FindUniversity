@@ -24,7 +24,7 @@ namespace FindUniversity.ViewModel
 
         [Required]
         [Compare("Password",ErrorMessage ="Паролі не співпадають")]
-        [Display(Name ="Підтвердження паралю")]
+        [Display(Name ="Підтвердження паролю")]
         [DataType(DataType.Password)]
         public string PasswordConfirm { get; set; }
     }

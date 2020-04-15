@@ -144,8 +144,9 @@ namespace FindUniversity.Controllers
         }
 
         // GET: Faculties/Delete/5
-        public async Task<IActionResult> Delete(int? universityId, int? id)
+        public async Task<IActionResult> Delete(int? universityId, int? id, string? error)
         {
+            ViewBag.ErrorMes = error;
             if (id == null)
             {
                 return NotFound();
@@ -169,11 +170,29 @@ namespace FindUniversity.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int universityId, int id)
         {
-            ViewBag.UniversityId = universityId;
-            var faculties = await _context.Faculties.FindAsync(id);
-            _context.Faculties.Remove(faculties);
-            await _context.SaveChangesAsync();
-            return RedirectToAction("Index", "Faculties", new { id = universityId });
+            try
+            {
+                ViewBag.UniversityId = universityId;
+                var faculties = await _context.Faculties.FindAsync(id);
+                if (_context.FacultyEducationalProg.Where(b => b.FacultyId == id).Count() != 0)
+                    throw new Exception("Цей факультет містить освітні програми!");
+                if (universityId == 0)
+                {
+                   var facs = _context.Faculties.Where(u => u.Id == id);
+                    foreach (var fac in facs)
+                    {
+                        universityId = fac.UniversityId;
+                    }
+                }
+                _context.Faculties.Remove(faculties);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Index", "Faculties", new { id = universityId });
+            }
+            catch (Exception e)
+            {
+                ViewBag.ErrorMes = e.Message;
+                return RedirectToAction("Delete", "Faculties", new { error = e.Message });
+            }
         }
 
         private bool FacultiesExists(int id)

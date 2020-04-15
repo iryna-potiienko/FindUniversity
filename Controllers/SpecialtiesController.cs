@@ -121,8 +121,9 @@ namespace FindUniversity.Controllers
         }
 
         // GET: Specialties/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int? id, string? error)
         {
+            ViewBag.ErrorMes = error;
             if (id == null)
             {
                 return NotFound();
@@ -143,10 +144,20 @@ namespace FindUniversity.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var specialties = await _context.Specialties.FindAsync(id);
-            _context.Specialties.Remove(specialties);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                var specialties = await _context.Specialties.FindAsync(id);
+                if (_context.EducationalProg.Where(b => b.SpecialtiesId == id).Count() != 0)
+                    throw new Exception("Ця спеціальність містить освітні програми!");
+                _context.Specialties.Remove(specialties);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception e)
+            {
+                ViewBag.ErrorMes = e.Message;
+                return RedirectToAction("Delete", "Specialties", new { error = e.Message });
+            }
         }
 
         private bool SpecialtiesExists(int id)

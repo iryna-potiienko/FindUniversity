@@ -149,8 +149,9 @@ namespace FindUniversity.Controllers
         }
 
         // GET: Universities/Delete/5
-        public async Task<IActionResult> Delete(int? countryId, int? id)
+        public async Task<IActionResult> Delete(int? countryId, int? id, string? error)
         {
+            ViewBag.ErrorMes = error;
             if (id == null)
             {
                 return NotFound();
@@ -173,12 +174,30 @@ namespace FindUniversity.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int countryId, int id)
         {
-            ViewBag.CountryId = countryId;
-            var universities = await _context.Universities.FindAsync(id);
-            _context.Universities.Remove(universities);
-            await _context.SaveChangesAsync();
-            //return RedirectToAction(nameof(Index));
-            return RedirectToAction("Index", "Universities", new { id = countryId });
+            try
+            {
+                ViewBag.CountryId = countryId;
+                var universities = await _context.Universities.FindAsync(id);
+                if (_context.Faculties.Where(b => b.UniversityId == id).Count() != 0)
+                    throw new Exception("Цей університет містить факультети!");
+                if (countryId == 0)
+                {
+                    var facs = _context.Universities.Where(u => u.Id == id);
+                    foreach (var fac in facs)
+                    {
+                        countryId = fac.CountryId;
+                    }
+                }
+                _context.Universities.Remove(universities);
+                await _context.SaveChangesAsync();
+                //return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Universities", new { id = countryId });
+            }
+            catch (Exception e)
+            {
+                ViewBag.ErrorMes = e.Message;
+                return RedirectToAction("Delete", "Universities", new { error = e.Message });
+            }
         }
 
         private bool UniversitiesExists(int id)
