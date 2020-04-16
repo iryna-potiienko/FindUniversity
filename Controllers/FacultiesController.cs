@@ -199,5 +199,14 @@ namespace FindUniversity.Controllers
         {
             return _context.Faculties.Any(e => e.Id == id);
         }
+        public IActionResult Validation(string? name, int? id)
+        {
+            var faculties = _context.Faculties.Where(s => s.Name == name).Where(s => s.Id != id);
+            if (faculties.Count() > 0)
+            {
+                return Json(data: "Такий факультет вже є в базі");
+            }
+            return Json(data: true);
+        }
     }
 }

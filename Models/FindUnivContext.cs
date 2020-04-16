@@ -35,12 +35,15 @@ namespace FindUniversity
         {
             modelBuilder.Entity<Countries>(entity =>
             {
+                //entity.HasIndex(e => new { e.Name }).IsUnique(true);
                 entity.Property(e => e.Id).HasColumnName("id");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasColumnName("name")
                     .HasMaxLength(10);
+                //entity.Property(e=>e.Name).HasColumnAnnotation("Index", new IndexAnnotation(new IndexAttribute("IX_EmailIndex") { IsUnique = true }))
+                //entity.HasIndex(e=>e.Name).IsUnique();
             });
 
             modelBuilder.Entity<EducationalProg>(entity =>

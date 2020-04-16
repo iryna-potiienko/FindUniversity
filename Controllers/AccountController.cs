@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using FindUniversity.Models;
 using FindUniversity.ViewModel;
-
+using System.Security.Claims;
 
 namespace FindUniversity.Controllers
 {
@@ -34,6 +34,7 @@ namespace FindUniversity.Controllers
                 User user = new User { Email = model.Email, UserName = model.Email, Year = model.Year };
                 // додаємо користувача
                 var result = await _userManager.CreateAsync(user, model.Password);
+                
                 if (result.Succeeded)
                 {
                     // установка кукі

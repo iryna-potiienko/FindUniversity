@@ -189,5 +189,15 @@ namespace FindUniversity.Controllers
         {
             return _context.FacultyEducationalProg.Any(e => e.Id == id);
         }
+
+        public IActionResult Validation(string? facultyName, int? id)
+        {
+            var facEducationalProgs = _context.FacultyEducationalProg.Where(s => s.Faculty.Name == facultyName).Where(s => s.EducationalProgId != id);
+            if (facEducationalProgs.Count() > 0)
+            {
+                return Json(data: "Така освітня програма вже є на цьому факультеті");
+            }
+            return Json(data: true);
+        }
     }
 }

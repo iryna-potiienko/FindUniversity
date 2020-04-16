@@ -204,5 +204,15 @@ namespace FindUniversity.Controllers
         {
             return _context.Universities.Any(e => e.Id == id);
         }
+
+        public IActionResult Validation(string? name, int? id)
+        {
+            var universities = _context.Universities.Where(s => s.Name == name).Where(s => s.Id != id);
+            if (universities.Count() > 0)
+            {
+                return Json(data: "Такий університет вже є в базі");
+            }
+            return Json(data: true);
+        }
     }
 }

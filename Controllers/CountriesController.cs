@@ -10,6 +10,7 @@ using ClosedXML.Utils;
 using System.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace FindUniversity.Controllers
 {
@@ -125,6 +126,8 @@ namespace FindUniversity.Controllers
         public async Task<IActionResult> Delete(int? id, string? error)
         {
             ViewBag.ErrorMes = error;
+            //string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+            //return Content($"ваша роль: {role}");
             if (id == null)
             {
                 return NotFound();
@@ -143,10 +146,22 @@ namespace FindUniversity.Controllers
         // POST: Countries/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+       // [Authorize(Roles ="admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             try
             {
+                string role = "user";
+              /*  if (ClaimsIdentity.DefaultRoleClaimType != null)
+                {
+                    role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+
+                    if (role != "admin")
+                    {
+                        //throw new Exception("Видалити може лише адміністратор!");
+                        return Content($"ваша роль: {role} Видалити може лише адміністратор!");
+                    }
+                }*/
                 var countries = await _context.Countries.FindAsync(id);
                 if (_context.Universities.Where(b => b.CountryId == id).Count() != 0)
                     throw new Exception("Ця країна містить університети!");
@@ -166,147 +181,15 @@ namespace FindUniversity.Controllers
             return _context.Countries.Any(e => e.Id == id);
         }
 
-  /*      [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Import(IFormFile fileExcel)
+        public IActionResult Validation(string? name, int? id)
         {
-            if (ModelState.IsValid)
+            var countries = _context.Countries.Where(s => s.Name == name).Where(s => s.Id != id);
+            if (countries.Count() > 0)
             {
-                if (fileExcel != null)
-                {
-                    using (var stream = new FileStream(fileExcel.FileName, FileMode.Create))
-                    {
-                        await fileExcel.CopyToAsync(stream);
-                        using (XLWorkbook workBook = new XLWorkbook(stream, XLEventTracking.Disabled))
-                        {
-                            //перегляд усіх листів (в даному випадку категорій)
-                            foreach (IXLWorksheet worksheet in workBook.Worksheets)
-                            {
-                                //worksheet.Name - назва категорії. Пробуємо знайти в БД, якщо відсутня, то створюємо нову
-                                Countries newcat;
-                                var c = (from cat in _context.Countries
-                                         where cat.Name.Contains(worksheet.Name)
-                                         select cat).ToList();
-                                if (c.Count > 0)
-                                {
-                                    newcat = c[0];
-                                }
-                                else
-                                {
-                                    newcat = new Countries();
-                                    newcat.Name = worksheet.Name;
-                                    //newcat.Info = "from EXCEL";
-                                    //додати в контекст
-                                    _context.Countries.Add(newcat);
-                                }
-                                //перегляд усіх рядків                    
-                                foreach (IXLRow row in worksheet.RowsUsed().Skip(1))
-                                {
-                                    try
-                                    {
-                                        Universities university = new Universities();
-                                        university.Name = row.Cell(1).Value.ToString();
-                                        //university.Info = row.Cell(6).Value.ToString();
-                                        university.Country = newcat;
-                                        _context.Universities.Add(university);
-                                        //у разі наявності автора знайти його, у разі відсутності - додати
-                                        for (int i = 2; i <= 5; i++)
-                                        {
-                                            if (row.Cell(i).Value.ToString().Length > 0)
-                                            {
-                                                Faculties faculty;
-
-                                                var a = (from fac in _context.Faculties
-                                                         where fac.Name.Contains(row.Cell(i).Value.ToString())
-                                                         select fac).ToList();
-                                                if (a.Count > 0)
-                                                {
-                                                    faculty = a[0];
-                                                }
-                                                else
-                                                {
-                                                    faculty = new Faculties();
-                                                    faculty.Name = row.Cell(i).Value.ToString();
-                                                    faculty.Info = "from EXCEL";
-                                                    //додати в контекст
-                                                    _context.Add(faculty);
-                                                }
-                                              /*  AuthorsBooks ab = new AuthorsBooks();
-                                                ab.Book = book;
-                                                ab.Author = author;
-                                                _context.AuthorsBooks.Add(ab);
-                                            }
-                                        }
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        //logging самостійно :)
-
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                await _context.SaveChangesAsync();
+                return Json(data: "Така країна вже є в базі");
             }
-            return RedirectToAction(nameof(Index));
+            return Json(data: true);
         }
-
-        public ActionResult Export()
-        {
-            using (XLWorkbook workbook = new XLWorkbook(XLEventTracking.Disabled))
-            {
-                var counries = _context.Countries.Include("Universities").ToList();
-                //тут, для прикладу ми пишемо усі книжки з БД, в своїх проектах ТАК НЕ РОБИТИ (писати лише вибрані)
-                foreach (var c in counries)
-                {
-                    var worksheet = workbook.Worksheets.Add(c.Name);
-
-                    worksheet.Cell("A1").Value = "Назва";
-                    worksheet.Cell("B1").Value = "Автор 1";
-                    worksheet.Cell("C1").Value = "Автор 2";
-                    worksheet.Cell("D1").Value = "Автор 3";
-                    worksheet.Cell("E1").Value = "Автор 4";
-                    worksheet.Cell("F1").Value = "Категорія";
-                    worksheet.Cell("G1").Value = "Інформація";
-                    worksheet.Row(1).Style.Font.Bold = true;
-                    var universities = c.Universities.ToList();
-
-                    //нумерація рядків/стовпчиків починається з індекса 1 (не 0)
-                    for (int i = 0; i < universities.Count; i++)
-                    {
-                        worksheet.Cell(i + 2, 1).Value = universities[i].Name;
-                       // worksheet.Cell(i + 2, 7).Value = universities[i].Info;
-
-                     /*   var ab = _context.AuthorsBooks.Where(a => a.BookId == books[i].Id).Include("Author").ToList();
-                        //більше 4-ох нікуди писати
-                        int j = 0;
-                        foreach (var a in ab)
-                        {
-                            if (j < 5)
-                            {
-                                worksheet.Cell(i + 2, j + 2).Value = a.Author.Name;
-                                j++;
-                            }
-                        }
-
-                    }
-                }
-                using (var stream = new MemoryStream())
-                {
-                    workbook.SaveAs(stream);
-                    stream.Flush();
-
-                    return new FileContentResult(stream.ToArray(),
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                    {
-                        FileDownloadName = $"library_{DateTime.UtcNow.ToShortDateString()}.xlsx"
-                    };
-                }
-            }
-        }*/
 
 
     }

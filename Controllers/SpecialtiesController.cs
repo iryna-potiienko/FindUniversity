@@ -460,6 +460,19 @@ namespace FindUniversity.Controllers
             }
         }
 
+        public IActionResult Validation(string? name, int? id)
+        {
+            int result;
+            string numb = name.Substring(0, 3);
+            if (!Int32.TryParse(numb, out result)) return Json(data: "Спеціальність має бути вказана з індексом");
+            var sp = _context.Specialties.Where(s => s.Name == name).Where(s => s.Id != id);
+            if (sp.Count() > 0)
+            {
+                return Json(data: "Така спеціальність вже є в базі");
+            }
+            return Json(data: true);
+        }
+
 
         //Vika Kharchenko, [26.03.20 21:07]
 /*public async Task<IActionResult> Import1(IFormFile fileExcel)

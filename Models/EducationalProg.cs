@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -13,6 +14,8 @@ namespace FindUniversity
 
         public int Id { get; set; }
         [Required(ErrorMessage = "Обов'язкове поле!")]
+        [MinLength(6)]
+        [Remote(action: "Validation", controller: "EducationalProgs", AdditionalFields = nameof(Id))]
         [Display(Name = "Назва")]
         public string Name { get; set; }
 

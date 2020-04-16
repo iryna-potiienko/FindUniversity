@@ -201,5 +201,15 @@ namespace FindUniversity.Controllers
         {
             return _context.EducationalProg.Any(e => e.Id == id);
         }
+
+        public IActionResult Validation(string? name, int? id)
+        {
+            var educationalProgs = _context.EducationalProg.Where(s => s.Name == name).Where(s => s.Id != id);
+            if (educationalProgs.Count() > 0)
+            {
+                return Json(data: "Така освітня програма вже є в базі");
+            }
+            return Json(data: true);
+        }
     }
 }
