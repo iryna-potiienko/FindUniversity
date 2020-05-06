@@ -138,7 +138,7 @@ namespace FindUniversity.Controllers
         }
 
         // GET: EducationalProgs/Delete/5
-        public async Task<IActionResult> Delete(int? specialtiesId, int? id, string? error)
+        public async Task<IActionResult> Delete(int? specialtiesId, int? id, string error)
         {
             ViewBag.ErrorMes = error;
             if (id == null)
@@ -202,7 +202,7 @@ namespace FindUniversity.Controllers
             return _context.EducationalProg.Any(e => e.Id == id);
         }
 
-        public IActionResult Validation(string? name, int? id)
+        public IActionResult Validation(string name, int? id)
         {
             var educationalProgs = _context.EducationalProg.Where(s => s.Name == name).Where(s => s.Id != id);
             if (educationalProgs.Count() > 0)

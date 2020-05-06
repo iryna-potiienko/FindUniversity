@@ -123,7 +123,7 @@ namespace FindUniversity.Controllers
 
        // [Authorize(Roles ="admin")]
         // GET: Countries/Delete/5
-        public async Task<IActionResult> Delete(int? id, string? error)
+        public async Task<IActionResult> Delete(int? id, string error)
         {
             ViewBag.ErrorMes = error;
             //string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
@@ -151,7 +151,7 @@ namespace FindUniversity.Controllers
         {
             try
             {
-                string role = "user";
+               // string role = "user";
               /*  if (ClaimsIdentity.DefaultRoleClaimType != null)
                 {
                     role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
@@ -181,7 +181,7 @@ namespace FindUniversity.Controllers
             return _context.Countries.Any(e => e.Id == id);
         }
 
-        public IActionResult Validation(string? name, int? id)
+        public IActionResult Validation(string name, int? id)
         {
             var countries = _context.Countries.Where(s => s.Name == name).Where(s => s.Id != id);
             if (countries.Count() > 0)

@@ -144,7 +144,7 @@ namespace FindUniversity.Controllers
         }
 
         // GET: Faculties/Delete/5
-        public async Task<IActionResult> Delete(int? universityId, int? id, string? error)
+        public async Task<IActionResult> Delete(int? universityId, int? id, string error)
         {
             ViewBag.ErrorMes = error;
             if (id == null)
@@ -199,7 +199,7 @@ namespace FindUniversity.Controllers
         {
             return _context.Faculties.Any(e => e.Id == id);
         }
-        public IActionResult Validation(string? name, int? id)
+        public IActionResult Validation(string name, int? id)
         {
             var faculties = _context.Faculties.Where(s => s.Name == name).Where(s => s.Id != id);
             if (faculties.Count() > 0)

@@ -121,7 +121,7 @@ namespace FindUniversity.Controllers
         }
 
         // GET: Specialties/Delete/5
-        public async Task<IActionResult> Delete(int? id, string? error)
+        public async Task<IActionResult> Delete(int? id, string error)
         {
             ViewBag.ErrorMes = error;
             if (id == null)
@@ -169,7 +169,7 @@ namespace FindUniversity.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Import(IFormFile fileExcel)
         {
-            string ErrorMes, err;
+            //string ErrorMes, err;
             if (ModelState.IsValid)
             {
                 if (fileExcel != null)
@@ -204,23 +204,17 @@ namespace FindUniversity.Controllers
                                 //перегляд усіх рядків                    
                                 foreach (IXLRow row in worksheet.RowsUsed().Skip(1))
                                 {
-                                   // try
-                                  //  {
                                     Countries country = new Countries();
                                     Universities university = new Universities();
                                     Faculties faculties=new Faculties();
                                     EducationalProg educationalProg = new EducationalProg();
 
-                                        //newcat.Name = worksheet.Name.Substring(0, 3) + " " + row.Cell(8).Value.ToString();
-
-                                        //EducationalProg educationalProg;
                                         var edu = (from ed in _context.EducationalProg
                                                  where ed.Name == row.Cell(1).Value.ToString()
                                                  select ed).ToList();
                                         if (edu.Count > 0)
                                         {
                                             educationalProg = edu[0];
-                                            //educationalProg.Specialties = newcat;
                                         }
                                         else
                                         {
@@ -250,10 +244,8 @@ namespace FindUniversity.Controllers
                                                     }
                                                     else
                                                     {
-                                                        // if (row.Cell(z).Value.ToString().Length == 0) throw new Exception(" Країну не вірно вказано у спеціальності " + worksheet.Name + "у рядку " + row.RowNumber());
                                                         country = new Countries();
                                                         country.Name = row.Cell(i + 2).Value.ToString();
-                                                        //country.Info = "from EXCEL";
                                                         //додати в контекст
                                                         _context.Countries.Add(country);
                                                     }
@@ -265,8 +257,6 @@ namespace FindUniversity.Controllers
                                             }
                                             catch (Exception e)
                                             {
-                                                //throw new Exception(e.Message);
-                                                //err = " Країну не вірно вказано у спеціальності " + worksheet.Name + "у рядку " + row.RowNumber();
                                                 ViewBag.ErrorMes = e.Message;
                                                 return RedirectToAction("Index", "Specialties", new { error = e.Message });
                                             }
@@ -287,10 +277,7 @@ namespace FindUniversity.Controllers
                                                     {
                                                         university = new Universities();
                                                         university.Name = row.Cell(i + 1).Value.ToString();
-                                                        //university.Faculties.Add(faculties);
-                                                        // if(country==null) throw new Exception(" Країну не вірно вказано у спеціальності " + worksheet.Name + "у рядку " + row.RowNumber());
                                                         university.Country = country;
-                                                        //universities.Info = "from EXCEL";
                                                         //додати в контекст
                                                         _context.Universities.Add(university);
 
@@ -303,13 +290,9 @@ namespace FindUniversity.Controllers
                                             }
                                             catch (Exception e)
                                             {
-                                                //err = " Університет не вірно вказано у спеціальності " + worksheet.Name + "у рядку " + row.RowNumber();
                                                 ViewBag.ErrorMes = e.Message;
                                                 return RedirectToAction("Index", "Specialties", new { error = e.Message });
-                                                //throw new Exception(e.Message);
-                                                //throw new Exception("Університет не вказано у спеціальності " + worksheet.Name + " у рядку " + row.RowNumber().ToString());
                                             }
-                                            //}
                                             var a = (from fac in _context.Faculties
                                                      where fac.University.Name == university.Name && fac.University.Country.Name.Contains(country.Name) && fac.Name == row.Cell(i).Value.ToString()
                                                      select fac).ToList();
@@ -320,51 +303,24 @@ namespace FindUniversity.Controllers
                                             else
                                             {
                                                 faculties = new Faculties();
-                                                //university = new Universities();
                                                 faculties.Name = row.Cell(i).Value.ToString();
-                                                //faculties.Info = "from EXCEL";
-                                                //university.Faculties.Add(faculties);
                                                 faculties.University = university;
                                                 //додати в контекст
                                                 _context.Faculties.Add(faculties);
                                             }
-                                        //}
-                                   // }
+                                       
                                                 FacultyEducationalProg fe;
-                                              /*  var facEd = (from fae in _context.FacultyEducationalProg
-                                                             where fae.EducationalProg.Name == educationalProg.Name && fae.Faculty.Name == faculties.Name && fae.Faculty.University.Name == university.Name
-                                                             select fae).ToList();
-                                                if (facEd.Count > 0)
-                                                {
-                                                    fe = facEd[0];
-                                                    //fe.EducationalProg = educationalProg;
-                                                    // fe.Faculty = faculties;
-                                                    //continue;
-                                                }
-                                                else
-                                                {*/
-                                                    fe = new FacultyEducationalProg();
-                                                    fe.EducationalProg = educationalProg;
-                                                    fe.Faculty = faculties;
-                                                    _context.FacultyEducationalProg.Add(fe);
-                                               // }
-                                            //}
+                                                fe = new FacultyEducationalProg();
+                                                fe.EducationalProg = educationalProg;
+                                                fe.Faculty = faculties;
+                                                _context.FacultyEducationalProg.Add(fe);
                                         }
                                     }
-
-
-
-
-
-
-
-                                        
                                 }
                             }
                         }
                     }
                 }
-
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
@@ -383,7 +339,7 @@ namespace FindUniversity.Controllers
                     {
                         worksheet = workbook.Worksheets.Add(c.Name.Substring(0, 3));
                     }
-                    catch (ArgumentException are)
+                    catch (ArgumentException)
                     {
                         int length;
                         if (c.Name.Length > 32)
@@ -391,7 +347,6 @@ namespace FindUniversity.Controllers
                         else
                             length = c.Name.Length;
                         worksheet = workbook.Worksheets.Add(c.Name.Substring(0, length));
-                        //continue;
                     }
 
                         worksheet.Cell("A1").Value = "Назва освітньої програми";
@@ -422,10 +377,6 @@ namespace FindUniversity.Controllers
                                 if (j < 10)
                                 {
                                     worksheet.Cell(i + 2, j + 2).Value = f.Faculty.Name;
-                                    //worksheet.Cell(i + 2, 4).Value = f.Faculty.University.Name;
-                                    //       j++;
-                                    //    }
-                                    //int z = 0;
                                     var faculties = _context.Faculties.Where(c => c.Id == f.FacultyId).Include("University").ToList();
                                     foreach (var fac in faculties)
                                     {
@@ -436,15 +387,12 @@ namespace FindUniversity.Controllers
                                         {
                                             worksheet.Cell(i + 2, j + 4).Value = univ.Country.Name;
                                         }
-                                        //j = j + 3;
                                     }
                                     j = j + 3;
                                 }
                             }
 
-                            //var univ = _context.FacultyEducationalProg.Where(a => a.FacultyId == educationalProgs[i].Id).Include("Faculty").ToList();
                         }
-                    
                 }
                 using (var stream = new MemoryStream())
                 {
@@ -460,7 +408,7 @@ namespace FindUniversity.Controllers
             }
         }
 
-        public IActionResult Validation(string? name, int? id)
+        public IActionResult Validation(string name, int? id)
         {
             int result;
             string numb = name.Substring(0, 3);
@@ -472,194 +420,5 @@ namespace FindUniversity.Controllers
             }
             return Json(data: true);
         }
-
-
-        //Vika Kharchenko, [26.03.20 21:07]
-/*public async Task<IActionResult> Import1(IFormFile fileExcel)
-        {
-            string ErrorMes;
-            if (ModelState.IsValid)
-            {
-                if (fileExcel != null)
-                {
-                    using (var stream = new FileStream(fileExcel.FileName, FileMode.Create))
-                    {
-                        await fileExcel.CopyToAsync(stream);
-                        using (XLWorkbook workBook = new XLWorkbook(stream, XLEventTracking.Disabled))
-                        {
-                            foreach (IXLWorksheet worksheet in workBook.Worksheets)
-                            {
-                                Categories newcat;
-                                var c = (from cat in _context.Categories
-                                         where cat.Category.Equals(worksheet.Name)
-                                         select cat).ToList();
-                                if (c.Count > 0)
-                                {
-                                    newcat = c[0];
-                                }
-                                else
-                                {
-                                    newcat = new Categories();
-                                    newcat.Category = worksheet.Name;
-                                    _context.Categories.Add(newcat);
-                                    await _context.SaveChangesAsync();
-                                }
-
-                                foreach (IXLRow row in worksheet.RowsUsed().Skip(1))
-                                {
-                                    try
-                                    {
-                                        Documents doc = new Documents();
-                                        doc.Type = new Types();
-                                        doc.Broker = new Brokers();
-                                        doc.Client = new Clients();
-                                        try
-                                        {
-                                            doc.Number = row.Cell(1).Value.ToString();
-                                            if (doc.Number.Length != 10)
-                                            {
-                                                throw new Exception("Невірно вказаний номер документа в категорії " + worksheet.Name + " в " + row.RowNumber().ToString() + " рядку");
-                                            }
-                                            for (int i = 0; i < 10; i++)
-                                            {
-                                                if (doc.Number[i] < '0' || doc.Number[i] > '9') { throw new Exception("Невірно вказаний номер документа в категорії " + worksheet.Name + " в " + row.RowNumber().ToString() + " рядку"); }
-                                            }
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            throw new Exception("Невірно вказаний номер документа в категорії " + worksheet.Name + " в " + row.RowNumber().ToString() + " рядку");
-                                        }
-
-                                        doc.Type.Type = row.Cell(2).Value.ToString();
-
-                                        var t = (from ty in _context.Types
-                                                 where ty.Type.Equals(row.Cell(2).Value.ToString())
-                                                 select ty).ToList();
-                                        if (t.Count > 0)
-                                        {
-                                            doc.Type = t[0];
-                                        }
-                                        else
-                                        {
-                                            var cat = (from ca in _context.Categories
-                                                       where ca.Category.Equals(newcat.Category)
-
-
-                                                        select ca).ToList();
-                                            doc.Type.Category = cat[0];
-                                            _context.Types.Add(doc.Type);
-                                            await _context.SaveChangesAsync();
-                                            //throw new Exception("Невірий тип договору в категорії " + worksheet.Name + " в " + row.RowNumber().ToString() + " рядку");
-
-                                        }
-
-                                        //doc.Broker.FullName = row.Cell(3).Value.ToString();
-                                        char[] param = { ' ' };
-                                        try
-                                        {
-                                            string name = row.Cell(3).Value.ToString().Split(param)[0];
-                                            string surname = row.Cell(3).Value.ToString().Split(param)[1];
-                                            var a = (from br in _context.Brokers
-                                                     where br.Name.Equals(name) && br.Surname.Equals(surname)
-                                                     select br).ToList();
-                                            if (a.Count > 0)
-                                            {
-                                                doc.Broker = a[0];
-                                            }
-                                            else
-                                            {
-                                                throw new Exception("Невівне ім'я брокера в категорії " + worksheet.Name + " в " + row.RowNumber().ToString() + " рядку" +
-                                                    "Такого брокера немає в базі");
-                                            }
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            throw new Exception("Невівне ім'я брокера в категорії " + worksheet.Name + " в " + row.RowNumber().ToString() + " рядку" +
-                                                   "Такого брокера немає в базі");
-                                        }
-
-
-                                        // doc.Client.FullName = row.Cell(4).Value.ToString();
-                                        try
-                                        {
-                                            string name = row.Cell(4).Value.ToString().Split(param)[0];
-                                            string surname = row.Cell(4).Value.ToString().Split(param)[1];
-
-                                            var cli = (from clnt in _context.Clients
-                                                       where clnt.Name.Equals(name) && clnt.Surname.Equals(surname)
-                                                       select clnt).ToList();
-                                            if (cli.Count > 0)
-                                            {
-                                                doc.Client = cli[0];
-                                            }
-                                            else
-                                            {
-                                                throw new Exception("Невірне ім'я клієнта в категорії " + worksheet.Name + " в " + row.RowNumber().ToString() + " рядку." +
-                                                    " Такого клієнта немає в базі");
-
-                                            }
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            throw new Exception("Невірне ім'я клієнта в категорії " + worksheet.Name + " в " + row.RowNumber().ToString() + " рядку." +
-                                                    " Такого клієнта немає в базі");
-                                        }
-
-                                        
-try
-                                        {
-                                            doc.Date = Convert.ToDateTime(row.Cell(5).Value);
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            throw new Exception("Невірно вказана дата в категорії " + worksheet.Name + " в " + row.RowNumber().ToString() + " рядку");
-                                        }
-                                        try
-                                        {
-                                            doc.Sum = Convert.ToDecimal(row.Cell(6).Value);
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            throw new Exception("Невірно вказана ціна в категорії " + worksheet.Name + " в " + row.RowNumber().ToString() + " рядку");
-                                        }
-
-                                        var d = (from dd in _context.Documents
-                                                 where dd.Number.Equals(doc.Number)
-                                                 select dd).ToList();
-
-                                        if (d.Count == 0)
-                                        {
-                                            _context.Documents.Add(doc);
-                                        }
-                                        else
-                                        {
-                                            _context.Documents.Find(d[0].Id).Type = doc.Type;
-                                            _context.Documents.Find(d[0].Id).Broker = doc.Broker;
-                                            _context.Documents.Find(d[0].Id).Client = doc.Client;
-                                            _context.Documents.Find(d[0].Id).Date = doc.Date;
-                                            _context.Documents.Find(d[0].Id).Sum = doc.Sum;
-                                        }
-
-
-
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        ViewBag.ErrorMes = e.Message;
-                                        return RedirectToAction("Index", "Documents", new { brokerId = -1, clientId = -1, error = e.Message });
-                                    }
-
-                                }
-
-
-                            }
-                        }
-                    }
-                }
-
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction(nameof(Index));
-        }*/
     }
 }
